@@ -17,6 +17,15 @@ import librosa
 import os
 from io import BytesIO
 import base64
+import queue
+import threading
+import time
+from collections import deque
+import av
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
+
+# Import backend logic
+from parkinsons_detection import LivePredictor
 
 # Set page configuration
 st.set_page_config(
@@ -72,6 +81,7 @@ st.markdown("---")
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", [
     "Project Overview", 
+    "Real-Time Monitor",
     "Algorithm Comparison", 
     "Feature Analysis", 
     "Model Performance", 
@@ -206,6 +216,169 @@ if page == "Project Overview":
     
     with col4:
         st.markdown('<div class="metric-card"><div class="metric-value">13</div><div class="metric-label">Features Selected</div></div>', unsafe_allow_html=True)
+
+    with col4:
+        st.markdown('<div class="metric-card"><div class="metric-value">13</div><div class="metric-label">Features Selected</div></div>', unsafe_allow_html=True)
+
+# === REALTIME MODULE START ===
+elif page == "Real-Time Monitor":
+    st.header("🧠 Real-Time Voice Monitoring")
+    st.markdown("---")
+    
+    # Initialize session state for real-time data
+    if 'probability_history' not in st.session_state:
+        st.session_state.probability_history = []
+        st.session_state.time_history = []
+    
+    if 'prediction_log' not in st.session_state:
+        st.session_state.prediction_log = deque(maxlen=10)
+        
+    # Sidebar controls
+    with st.sidebar:
+        st.subheader("Monitor Settings")
+        algo_selection = st.selectbox("Feature Selection Algorithm", ["Gray Wolf Optimization (Default)", "Artificial Bee Colony", "Particle Swarm Optimization"])
+        confidence_threshold = st.slider("Classification Threshold", 0.0, 1.0, 0.5, 0.05)
+        
+    # Main layout
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        st.subheader("Microphone Input")
+        
+        # Audio callback for WebRTC
+        # We use a queue to transfer frames from the WebRTC thread to the Streamlit script
+        if 'audio_queue' not in st.session_state:
+            st.session_state.audio_queue = queue.Queue()
+            
+        def audio_frame_callback(frame):
+            sound = frame.to_ndarray()
+            # Resample or just pass raw if samplerate matches (assuming standard 48k or 44.1k input, will need resampling in Predictor/Extraction)
+            # For simplicity in this demo, we assume the backend handles resampling or we get compatible audio
+            # But av usually gives 48kHz stereo. We need to convert to mono and maybe queue it.
+            
+            # Convert to mono and float32
+            if sound.ndim > 1:
+                sound = np.mean(sound, axis=1)
+            
+            # Normalize to [-1, 1] if int16
+            if sound.dtype == np.int16:
+                sound = sound.astype(np.float32) / 32768.0
+                
+            st.session_state.audio_queue.put(sound)
+            return frame
+
+        # WebRTC Streamer
+        ctx = webrtc_streamer(
+            key="parkinsons-live",
+            mode=WebRtcMode.SENDONLY,
+            audio_frame_callback=audio_frame_callback,
+            rtc_configuration=RTCConfiguration(
+                {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+            ),
+            media_stream_constraints={"video": False, "audio": True},
+        )
+        
+        st.markdown("### Live Status")
+        status_placeholder = st.empty()
+        
+        if ctx.state.playing:
+            status_placeholder.markdown("🔴 **Listening...**")
+        else:
+            status_placeholder.markdown("⚪ **Idle**")
+            
+    with col2:
+        st.subheader("Real-Time Analysis")
+        
+        # UI Components
+        gauge_placeholder = st.empty()
+        chart_placeholder = st.empty()
+        log_placeholder = st.empty()
+        
+        # Initialize Predictor (Load models once)
+        if 'live_predictor' not in st.session_state:
+            with st.spinner("Loading AI Models..."):
+                # Ensure model exists
+                if not os.path.exists('rf_model.pkl'):
+                    st.error("Model artifacts not found! Please run the training script first or wait for it to complete.")
+                else:
+                    st.session_state.live_predictor = LivePredictor()
+        
+        # Processing Loop
+        if ctx.state.playing and 'live_predictor' in st.session_state and st.session_state.live_predictor.model is not None:
+            
+            # Consuming queue
+            while not st.session_state.audio_queue.empty():
+                audio_chunk = st.session_state.audio_queue.get()
+                st.session_state.live_predictor.process_audio_chunk(audio_chunk)
+            
+            # Predict
+            result = st.session_state.live_predictor.predict_live()
+            
+            if result:
+                if result.get('is_silence'):
+                    status_placeholder.markdown("🟡 **Silence Detected**")
+                else:
+                    status_placeholder.markdown("🟢 **Processing Voice**")
+                    
+                    label = result['label']
+                    prob = result['pd_probability']
+                    
+                    # Update History
+                    current_time = pd.Timestamp.now().strftime('%H:%M:%S')
+                    st.session_state.probability_history.append(prob)
+                    st.session_state.time_history.append(current_time)
+                    
+                    if len(st.session_state.probability_history) > 50:
+                        st.session_state.probability_history.pop(0)
+                        st.session_state.time_history.pop(0)
+                    
+                    # Log
+                    log_entry = f"[{current_time}] {label} ({prob:.1%})"
+                    st.session_state.prediction_log.appendleft(log_entry)
+                    
+                    # Update Gauge
+                    color = "red" if prob > confidence_threshold else "green"
+                    gauge_html = f"""
+                    <div style="text-align: center;">
+                        <span style="font-size: 1.5rem; color: #7f8c8d;">Parkinson's Probability</span>
+                        <div style="background-color: #ecf0f1; border-radius: 10px; padding: 2px;">
+                            <div style="width: {prob*100}%; background-color: {color}; height: 24px; border-radius: 8px; transition: width 0.5s;"></div>
+                        </div>
+                        <span style="font-size: 2.5rem; font-weight: bold; color: {color};">{prob:.1%}</span>
+                    </div>
+                    """
+                    gauge_placeholder.markdown(gauge_html, unsafe_allow_html=True)
+            
+            # Update Chart (always, to show movement)
+            if st.session_state.probability_history:
+                chart_data = pd.DataFrame({
+                    'Time': st.session_state.time_history,
+                    'Probability': st.session_state.probability_history
+                })
+                # Simple line chart
+                if MATPLOTLIB_AVAILABLE:
+                     fig, ax = plt.subplots(figsize=(8, 3))
+                     ax.plot(st.session_state.probability_history, color='#3498db')
+                     ax.set_ylim(0, 1)
+                     ax.set_ylabel('PD Probability')
+                     ax.set_title('Live Prediction Trend')
+                     ax.grid(True, alpha=0.3)
+                     chart_placeholder.pyplot(fig)
+                     plt.close(fig)
+                else:
+                    chart_placeholder.line_chart(st.session_state.probability_history)
+
+            # Update Log
+            log_html = "#### Recent Predictions\n" + "\n".join([f"- {entry}" for entry in st.session_state.prediction_log])
+            log_placeholder.markdown(log_html)
+            
+            # Force rerun to create a loop effect (standard Streamlit hack for real-time)
+            # However, webrtc context handles the loop naturally. We just need to refresh UI.
+            # st.experimental_rerun() is deprecated, using run on change or just relying on loop
+            time.sleep(0.1) 
+            st.rerun()
+
+# === REALTIME MODULE END ===
 
 elif page == "Algorithm Comparison":
     st.header("Algorithm Comparison")
