@@ -1,0 +1,26 @@
+# Large datasets / artifacts not needed at runtime (model is in ml/artifacts/)
+HC_AH/
+PD_AH/
+PD_AH_Augmented/
+demo_augmented/
+*.wav
+*.xlsx
+data/uci_parkinsons.csv
+
+# Legacy / docs / notebooks
+archive/
+BE_Report-2/
+BE_Report-2*.zip
+*.ipynb
+*.tex
+Project_Report_Parkinsons_Detection.txt
+
+# Dev cruft
+**/node_modules/
+**/__pycache__/
+**/*.pyc
+.code-review-graph/
+.git/
+**/*.db
+**/server.log
+frontend/dist/

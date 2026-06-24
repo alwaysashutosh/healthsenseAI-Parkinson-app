@@ -1,0 +1,23 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production-please-32b}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-please-32b}
+    volumes:
+      - backend-data:/app/backend        # persist parkinsons.db
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  backend-data:

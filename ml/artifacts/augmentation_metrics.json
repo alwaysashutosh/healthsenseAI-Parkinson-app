@@ -1,0 +1,199 @@
+{
+  "method": "CTGAN conditional tabular augmentation (minority class = healthy)",
+  "ctgan": {
+    "epochs": 400,
+    "batch_size": 50
+  },
+  "train_before": {
+    "PD": 103,
+    "healthy": 33
+  },
+  "synthetic_healthy_added": 70,
+  "train_after": {
+    "PD": 103,
+    "healthy": 103
+  },
+  "test_size": 59,
+  "knn_params": {
+    "n_neighbors": 5,
+    "weights": "distance",
+    "metric": "euclidean"
+  },
+  "metrics_baseline": {
+    "accuracy": 0.9153,
+    "precision": 0.898,
+    "recall": 1.0,
+    "f1": 0.9462,
+    "macro_f1": 0.8731,
+    "specificity": 0.6667,
+    "roc_auc": 0.9576,
+    "confusion_matrix": [
+      [
+        10,
+        5
+      ],
+      [
+        0,
+        44
+      ]
+    ]
+  },
+  "metrics_augmented": {
+    "accuracy": 0.9322,
+    "precision": 0.9167,
+    "recall": 1.0,
+    "f1": 0.9565,
+    "macro_f1": 0.9013,
+    "specificity": 0.7333,
+    "roc_auc": 0.9545,
+    "confusion_matrix": [
+      [
+        11,
+        4
+      ],
+      [
+        0,
+        44
+      ]
+    ]
+  },
+  "synthetic_quality": {
+    "nan_count": 0,
+    "mean_ks_stat": 0.505,
+    "per_feature": {
+      "MDVP:Fo(Hz)": {
+        "real_mean": 179.1725,
+        "synth_mean": 117.1729,
+        "ks_stat": 0.52,
+        "ks_p": 0.0
+      },
+      "MDVP:Fhi(Hz)": {
+        "real_mean": 230.1584,
+        "synth_mean": 171.7286,
+        "ks_stat": 0.468,
+        "ks_p": 0.0
+      },
+      "MDVP:Flo(Hz)": {
+        "real_mean": 144.5621,
+        "synth_mean": 112.104,
+        "ks_stat": 0.28,
+        "ks_p": 0.046
+      },
+      "MDVP:Jitter(%)": {
+        "real_mean": 0.004,
+        "synth_mean": 0.0085,
+        "ks_stat": 0.693,
+        "ks_p": 0.0
+      },
+      "MDVP:Jitter(Abs)": {
+        "real_mean": 0.0,
+        "synth_mean": 0.0008,
+        "ks_stat": 0.686,
+        "ks_p": 0.0
+      },
+      "MDVP:RAP": {
+        "real_mean": 0.002,
+        "synth_mean": 0.0046,
+        "ks_stat": 0.638,
+        "ks_p": 0.0
+      },
+      "MDVP:PPQ": {
+        "real_mean": 0.0021,
+        "synth_mean": 0.0047,
+        "ks_stat": 0.623,
+        "ks_p": 0.0
+      },
+      "Jitter:DDP": {
+        "real_mean": 0.0059,
+        "synth_mean": 0.0139,
+        "ks_stat": 0.484,
+        "ks_p": 0.0
+      },
+      "MDVP:Shimmer": {
+        "real_mean": 0.0176,
+        "synth_mean": 0.0287,
+        "ks_stat": 0.325,
+        "ks_p": 0.013
+      },
+      "MDVP:Shimmer(dB)": {
+        "real_mean": 0.1635,
+        "synth_mean": 0.3644,
+        "ks_stat": 0.545,
+        "ks_p": 0.0
+      },
+      "Shimmer:APQ3": {
+        "real_mean": 0.0096,
+        "synth_mean": 0.0287,
+        "ks_stat": 0.698,
+        "ks_p": 0.0
+      },
+      "Shimmer:APQ5": {
+        "real_mean": 0.0104,
+        "synth_mean": 0.0316,
+        "ks_stat": 0.784,
+        "ks_p": 0.0
+      },
+      "MDVP:APQ": {
+        "real_mean": 0.0132,
+        "synth_mean": 0.0354,
+        "ks_stat": 0.684,
+        "ks_p": 0.0
+      },
+      "Shimmer:DDA": {
+        "real_mean": 0.0288,
+        "synth_mean": 0.0778,
+        "ks_stat": 0.639,
+        "ks_p": 0.0
+      },
+      "NHR": {
+        "real_mean": 0.0118,
+        "synth_mean": 0.0066,
+        "ks_stat": 0.371,
+        "ks_p": 0.003
+      },
+      "HNR": {
+        "real_mean": 24.8108,
+        "synth_mean": 22.8081,
+        "ks_stat": 0.286,
+        "ks_p": 0.04
+      },
+      "RPDE": {
+        "real_mean": 0.4408,
+        "synth_mean": 0.4199,
+        "ks_stat": 0.279,
+        "ks_p": 0.048
+      },
+      "DFA": {
+        "real_mean": 0.7013,
+        "synth_mean": 0.6811,
+        "ks_stat": 0.255,
+        "ks_p": 0.088
+      },
+      "spread1": {
+        "real_mean": -6.7937,
+        "synth_mean": -6.8057,
+        "ks_stat": 0.32,
+        "ks_p": 0.015
+      },
+      "spread2": {
+        "real_mean": 0.1741,
+        "synth_mean": 0.2563,
+        "ks_stat": 0.507,
+        "ks_p": 0.0
+      },
+      "D2": {
+        "real_mean": 2.1639,
+        "synth_mean": 1.767,
+        "ks_stat": 0.581,
+        "ks_p": 0.0
+      },
+      "PPE": {
+        "real_mean": 0.1222,
+        "synth_mean": 0.2044,
+        "ks_stat": 0.439,
+        "ks_p": 0.0
+      }
+    }
+  },
+  "note": "Test set is 100% real and identical to train_knn.py's split; CTGAN trained on the training split only. Synthetic data is augmentation, not real patient data."
+}

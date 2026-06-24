@@ -1,0 +1,123 @@
+{
+  "model": "KNeighborsClassifier (CTGAN-augmented)",
+  "params": {
+    "n_neighbors": 5,
+    "weights": "distance",
+    "metric": "euclidean"
+  },
+  "grid_search_optimum": {
+    "metric": "euclidean",
+    "n_neighbors": 1,
+    "weights": "uniform"
+  },
+  "cv_accuracy": 0.941,
+  "accuracy": 0.9322,
+  "precision": 0.9167,
+  "recall": 1.0,
+  "f1": 0.9565,
+  "roc_auc": 0.9545,
+  "confusion_matrix": [
+    [
+      11,
+      4
+    ],
+    [
+      0,
+      44
+    ]
+  ],
+  "test_size": 59,
+  "n_features": 22,
+  "dataset": "UCI Parkinson's (195 recordings) + CTGAN-balanced training",
+  "k_accuracy_curve": [
+    {
+      "k": 1,
+      "accuracy": 0.941
+    },
+    {
+      "k": 2,
+      "accuracy": 0.941
+    },
+    {
+      "k": 3,
+      "accuracy": 0.9265
+    },
+    {
+      "k": 4,
+      "accuracy": 0.919
+    },
+    {
+      "k": 5,
+      "accuracy": 0.8974
+    },
+    {
+      "k": 6,
+      "accuracy": 0.9045
+    },
+    {
+      "k": 7,
+      "accuracy": 0.8899
+    },
+    {
+      "k": 8,
+      "accuracy": 0.8974
+    },
+    {
+      "k": 9,
+      "accuracy": 0.8825
+    },
+    {
+      "k": 10,
+      "accuracy": 0.9048
+    },
+    {
+      "k": 11,
+      "accuracy": 0.8974
+    },
+    {
+      "k": 12,
+      "accuracy": 0.9048
+    },
+    {
+      "k": 13,
+      "accuracy": 0.8974
+    },
+    {
+      "k": 14,
+      "accuracy": 0.8825
+    },
+    {
+      "k": 15,
+      "accuracy": 0.8899
+    },
+    {
+      "k": 16,
+      "accuracy": 0.8751
+    },
+    {
+      "k": 17,
+      "accuracy": 0.8603
+    },
+    {
+      "k": 18,
+      "accuracy": 0.8677
+    },
+    {
+      "k": 19,
+      "accuracy": 0.8603
+    },
+    {
+      "k": 20,
+      "accuracy": 0.8603
+    }
+  ],
+  "specificity": 0.7333,
+  "macro_f1": 0.9013,
+  "augmented": true,
+  "training_rows": {
+    "real": 195,
+    "synthetic_healthy": 99,
+    "total": 294
+  },
+  "note": "Deployed model is fit on CTGAN-balanced full data; reported metrics are the held-out (30% real test) augmented results from augment_ctgan.py."
+}
